@@ -1,29 +1,65 @@
-import React, { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react';
 import { getAllMeetings } from '../../services/MeetingAPI';
+import MeetingForm from './MeetingForm';
 import MeetingList from './MeetingList';
 
 const MeetingCalendar = () => {
-
   const [meetings, setMeetings] = useState([]);
+  const [editingMeeting, setEditingMeeting] = useState(null);
 
-  const loadMeetings = () => {
-    // Load meetings from API
-    const AllMeetings = getAllMeetings();
-    setMeetings(AllMeetings);
-  }
+  const loadMeetings = async () => {
+    try {
+      const data = await getAllMeetings();
+      setMeetings(data);
+    } catch (error) {
+      console.error('Error loading meetings:', error);
+    }
+  };
 
-  // Render the meetings list whenever the component mounts / the page loads.
   useEffect(() => {
     loadMeetings();
-  },[]);
+  }, []);
+
+  const handleEditMeeting = (meeting) => {
+    const formattedMeeting = {
+      ...meeting,
+      participants: meeting.participants.join(', ')
+    };
+    setEditingMeeting(formattedMeeting);
+  };
 
   return (
-    <div className='meeting-calendar'>
-      <div className='mb-4'>
-        < MeetingList meetings={meetings} />
+    <>
+      <div className="row mb-4">
+        <div className="col-12">
+          <h2>Meeting Calendar</h2>
+        </div>
       </div>
-    </div>
-  )
-}
 
-export default MeetingCalendar
+      <div className="row mb-4">
+        <div className="col-12">
+          <MeetingForm
+            onMeetingAdded={loadMeetings}
+            editingMeeting={editingMeeting}
+            onMeetingUpdated={() => {
+              loadMeetings();
+              setEditingMeeting(null);
+            }} 
+          />
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-12">
+          <MeetingList 
+            meetings={meetings}
+            onMeetingDeleted={loadMeetings}
+            onEditMeeting={handleEditMeeting}
+          />
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default MeetingCalendar;
