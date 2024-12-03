@@ -1,10 +1,12 @@
-// src/services/MeetingAPI.js
-const BASE_URL = 'http://localhost:8080/api/meetings';
+const BASE_URL = 'http://localhost:8080/api';
 
-// Get all meetings
+// Meeting endpoints
+const MEETINGS_URL = `${BASE_URL}/meetings`;
+const FORM_LABELS_URL = `${BASE_URL}/form-labels/meetings`;
+
 export const getAllMeetings = async () => {
     try {
-        const response = await fetch(BASE_URL);
+        const response = await fetch(MEETINGS_URL);
         if (!response.ok) throw new Error('Failed to fetch meetings');
         return await response.json();
     } catch (error) {
@@ -13,10 +15,23 @@ export const getAllMeetings = async () => {
     }
 };
 
-// Add new meeting
+export const getFormLabels = async () => {
+    try {
+        const response = await fetch(FORM_LABELS_URL);
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to fetch form labels');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching form labels:', error);
+        throw error;
+    }
+};
+
 export const addMeeting = async (meetingForm) => {
     try {
-        const response = await fetch(BASE_URL, {
+        const response = await fetch(MEETINGS_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -26,19 +41,6 @@ export const addMeeting = async (meetingForm) => {
         
         if (!response.ok) {
             const errorData = await response.json();
-            
-            if (response.status === 400) {
-                const fieldErrors = {};
-                if (errorData.errors) {
-                    errorData.errors.forEach(error => {
-                        const fieldName = error.field;
-                        const defaultMessage = error.defaultMessage;
-                        fieldErrors[fieldName] = defaultMessage;
-                    });
-                }
-                return { success: false, fieldErrors };
-            }
-            
             throw new Error(errorData.message || 'Failed to create meeting');
         }
         
@@ -49,10 +51,9 @@ export const addMeeting = async (meetingForm) => {
     }
 };
 
-// Delete meeting
 export const deleteMeeting = async (id) => {
     try {
-        const response = await fetch(`${BASE_URL}/${id}`, {
+        const response = await fetch(`${MEETINGS_URL}/${id}`, {
             method: 'DELETE'
         });
         
@@ -64,10 +65,9 @@ export const deleteMeeting = async (id) => {
     }
 };
 
-// Update meeting
 export const updateMeeting = async (id, meetingForm) => {
     try {
-        const response = await fetch(`${BASE_URL}/${id}`, {
+        const response = await fetch(`${MEETINGS_URL}/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

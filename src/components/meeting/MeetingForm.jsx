@@ -1,6 +1,6 @@
 // src/components/meeting/MeetingForm.jsx
 import { useState, useEffect } from "react";
-import { addMeeting, updateMeeting } from "../../services/MeetingAPI";
+import { addMeeting, updateMeeting, getFormLabels } from '../../services/MeetingAPI';
 
 const MeetingForm = ({ onMeetingAdded, editingMeeting, onMeetingUpdated }) => {
   const [formData, setFormData] = useState({
@@ -15,6 +15,29 @@ const MeetingForm = ({ onMeetingAdded, editingMeeting, onMeetingUpdated }) => {
 
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+
+  // Add state for labels
+  const [labels, setLabels] = useState({
+    titleLabel: "Meeting Title", // Default values
+    dateLabel: "Meeting Date",
+    startTimeLabel: "Start Time",
+    endTimeLabel: "End Time",
+    levelLabel: "Meeting Level",
+    participantsLabel: "Participants",
+    descriptionLabel: "Description",
+  });
+
+  useEffect(() => {
+    const fetchLabels = async () => {
+      try {
+        const fetchedLabels = await getFormLabels();
+        setLabels(fetchedLabels);
+      } catch (error) {
+        console.error("Failed to fetch form labels:", error);
+      }
+    };
+    fetchLabels();
+  }, []);
 
   // Load editing meeting data into form
   useEffect(() => {
@@ -165,14 +188,14 @@ const MeetingForm = ({ onMeetingAdded, editingMeeting, onMeetingUpdated }) => {
       <div className="card-body">
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="form-label">Meeting Title</label>
+            <label className="form-label">{labels.titleLabel}</label>
             <input
               type="text"
               className={`form-control ${errors.title ? "is-invalid" : ""}`}
               name="title"
               value={formData.title}
               onChange={handleChange}
-              placeholder="Enter meeting title"
+              placeholder={`Enter ${labels.titleLabel.toLowerCase()}`}
             />
             {errors.title && (
               <div className="invalid-feedback">{errors.title}</div>
@@ -181,7 +204,7 @@ const MeetingForm = ({ onMeetingAdded, editingMeeting, onMeetingUpdated }) => {
 
           <div className="row mb-3">
             <div className="col-md-4">
-              <label className="form-label">Meeting Date</label>
+              <label className="form-label">{labels.dateLabel}</label>
               <input
                 type="date"
                 className={`form-control ${
@@ -197,7 +220,7 @@ const MeetingForm = ({ onMeetingAdded, editingMeeting, onMeetingUpdated }) => {
               )}
             </div>
             <div className="col-md-4">
-              <label className="form-label">Start Time</label>
+              <label className="form-label">{labels.startTimeLabel}</label>
               <input
                 type="time"
                 className={`form-control ${
@@ -212,7 +235,7 @@ const MeetingForm = ({ onMeetingAdded, editingMeeting, onMeetingUpdated }) => {
               )}
             </div>
             <div className="col-md-4">
-              <label className="form-label">End Time</label>
+              <label className="form-label">{labels.endTimeLabel}</label>
               <input
                 type="time"
                 className={`form-control ${errors.endTime ? "is-invalid" : ""}`}
@@ -227,14 +250,14 @@ const MeetingForm = ({ onMeetingAdded, editingMeeting, onMeetingUpdated }) => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Meeting Level</label>
+            <label className="form-label">{labels.levelLabel}</label>
             <select
               className={`form-select ${errors.level ? "is-invalid" : ""}`}
               name="level"
               value={formData.level}
               onChange={handleChange}
             >
-              <option value="">Select level</option>
+              <option value="">Select {labels.levelLabel.toLowerCase()}</option>
               <option value="Team">Team</option>
               <option value="Department">Department</option>
               <option value="Company">Company</option>
@@ -245,9 +268,7 @@ const MeetingForm = ({ onMeetingAdded, editingMeeting, onMeetingUpdated }) => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">
-              Participants (comma-separated emails)
-            </label>
+            <label className="form-label">{labels.participantsLabel}</label>
             <input
               type="text"
               className={`form-control ${
@@ -264,7 +285,7 @@ const MeetingForm = ({ onMeetingAdded, editingMeeting, onMeetingUpdated }) => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Description</label>
+            <label className="form-label">{labels.descriptionLabel}</label>
             <textarea
               className={`form-control ${
                 errors.description ? "is-invalid" : ""
@@ -272,7 +293,7 @@ const MeetingForm = ({ onMeetingAdded, editingMeeting, onMeetingUpdated }) => {
               name="description"
               value={formData.description}
               onChange={handleChange}
-              placeholder="Enter meeting description"
+              placeholder={`Enter ${labels.descriptionLabel.toLowerCase()}`}
               rows="3"
             />
             {errors.description && (
